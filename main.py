@@ -1,33 +1,29 @@
-﻿# sample streamlit python code
 import streamlit as st
-import time
 
-st.set_page_config(page_title="Setup Test App", layout="centered")
+import requests
 
-st.title("🧪 Streamlit Setup Test")
+name = st.text_input('Enter your name: ')
 
-st.write("If you can see this page, Streamlit is running correctly.")
+st.title(f'Welcome {name} to AP\'s Currency converter')
 
-# Session state test
-if "count" not in st.session_state:
-    st.session_state.count = 0
+amount = st.number_input('Enter the amount in INR: ',min_value=1)
 
-st.subheader("🔘 Button Test")
-if st.button("Click me"):
-    st.session_state.count += 1
-    st.success(f"Button clicked {st.session_state.count} times")
+target_currency = st.selectbox('Select the currency to convert to:', ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD' ])
 
-# Time test
-st.subheader("⏱️ Time Test")
-st.write("Current timestamp:")
-st.code(time.time())
+bt = st.button(f'Convert {amount} INR to {target_currency}')
 
-# Input test
-st.subheader("⌨️ Input Test")
-name = st.text_input("Enter your name")
+if bt: 
+    url = f'https://api.exchangerate-api.com/v4/latest/INR'
 
-if name:
-    st.info(f"Hello, {name}! 👋")
+    response = requests.get(url)
 
-st.divider()
-st.caption("✅ If buttons, input, and text work — your environment is ready.")
+
+    if response.status_code == 200:
+        data = response.json()
+        rate = data['rates'][target_currency]
+        conversion = amount * rate
+        st.success(f'{amount} INR is equal to {conversion:.2f} {target_currency}')
+    else:
+        st.error('Error fetching exchange rates. Please try again later.')
+
+      
